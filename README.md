@@ -1,11 +1,10 @@
-# Keycloak plugin for multifactor
+# multifactor-keycloak-plugin
 
-Keycloak plugin for multifactor authentication. 
-Provides an authentication execution for keycloak that presents a Multifactor iframe, to be used after primary authentication. (https://multifactor.ru/)
+Authentication execution plugin for Keycloak that adds <a href="https://multifactor.ru/" target="_blank">MultiFactor</a> into the authentication flow. Component uses Keycloak Service Provider Interface (SPI) to presents user a MultiFactor iframe after primary authentication is complete.
 
 ## Build
 
-You may need to modify the keycloak versions in the pom.xml to correspond to yours. Now used 18.0.0.
+Modify `keycloak.version` in `pom.xml` to correspond to your Keycloak version (currently, `18.0.0` is used), then build the component:
 
 ```
 $ mvn clean install
@@ -14,19 +13,27 @@ $ mvn clean install
 ## Install
 
 ```
-# stop keycloak
-$ cp target/keycloak-multifactor-spi-jar-with-dependencies.jar <keycloack dir>/providers
+$ cp <keycloack dir>/target/keycloak-multifactor-spi-jar-with-dependencies.jar <keycloack dir>/providers
 # run kc.bat build or kc.sh build from <keycloack dir>/bin
-# start keycloak
+# restart keycloak
 ```
+
 ## Configure
 
-You need to add Multifactor as a trusted frame-able source to the Keycloak Content Security Policy.
-Content-Security-Policy: `frame-src https://*.multifactor.ru/ 'self'; ...`
+1. In <a href="https://admin.multifactor.ru/" target="_blank">MultiFactor</a> administration console, add new "Website" resource. Use `JwtHS256` access token format;
 
-Since you can't modify the default Authentication Flows, make a copy of Browser. Add `Multifactor` as an execution under `Browser Forms`.
+2. In KeyCloak "Realm Settings" -> "Security Defenses" -> "Content-Security-Policy" add MultiFactor as a trusted frame-able source: 
+`frame-src https://*.multifactor.ru/ 'self';`
 
-When you hit `Config` you can enter your Multifactor api key, api secret, and api url. 
+3. In KeyCloak "Authentication" -> "Flow" select "Browser" and click "Copy";
 
-Then make sure to bind your Copy of Browser flow to the Browser Flow (on the Bindings tab).
+4. Under "Browser Forms" section click "Add Execution" and select `Multifactor`;
 
+5. Press "Config" and enter values:
+  * API key: value from step 1;
+  * API secret: value from step 1;
+  * API URL: https://api.multifactor.ru.
+
+6. Select `REQUIRED` under the Requirement column for "Copy of Browser Forms" and "Multifactor" executions. Save your configuration; 
+
+7. In your Keycloak client's settings, in the "Authentication Flow Overrides" section, bind your "Copy of browser" to the Browser Flow. Alternatively, you can bind new flow globally in the Keycloak "Bindings" tab.
