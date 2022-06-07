@@ -1,10 +1,10 @@
 # multifactor-keycloak-plugin
 
-Authentication execution plugin for Keycloak that adds <a href="https://multifactor.ru/" target="_blank">MultiFactor</a> into the authentication flow. Component uses Keycloak Service Provider Interface (SPI) to presents user a MultiFactor iframe after primary authentication is complete.
+Authentication execution plugin for Keycloak that adds <a href="https://multifactor.ru/" target="_blank">MultiFactor</a> into the authentication flow. Component uses Keycloak Service Provider Interface (SPI) to show user a MultiFactor iframe upon completion of primary authentication.
 
 ## Build
 
-Modify `keycloak.version` in `pom.xml` to correspond to your Keycloak version (currently, `18.0.0` is used), then build the component:
+Modify `keycloak.version` in `pom.xml` to match to your specific Keycloak version (currently, version `18.0.0` is used), then build the component:
 
 ```
 $ mvn clean install
@@ -29,7 +29,7 @@ $ cp <keycloack dir>/target/keycloak-multifactor-spi-jar-with-dependencies.jar <
 
 4. Under "Browser Forms" section click "Add Execution" and select `Multifactor`;
 
-5. Press "Config" and enter values:
+5. Press "Config" and enter the following values:
   * API key: value from step 1;
   * API secret: value from step 1;
   * API URL: https://api.multifactor.ru.
