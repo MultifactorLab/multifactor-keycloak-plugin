@@ -169,8 +169,6 @@ public class MultifactorAuthenticator implements Authenticator{
           form=context.form().setAttribute("request_url","");
           if (error == null) error=result.toString();
         }
-        //form.addScript("http://192.168.1.72/KeyCloakScript.js");
-        //form.addScript("${url.resourcesPath}/KeyCloakScript.js");
         if (error != null) 
             form.setError(error);
         return form.createForm("form.ftl");
