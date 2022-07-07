@@ -131,7 +131,7 @@
      */
     function onReceivedMessage(event) {
           //make sure message from known origin
-          if (arUrl.startsWith(event.origin)){
+          if (arUrl.indexOf(event.origin, 0)===0){
             doPostBack(event.data);
             // always clean up after yourself!
             offMessage(onReceivedMessage);
