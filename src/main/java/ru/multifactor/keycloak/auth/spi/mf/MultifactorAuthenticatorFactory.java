@@ -18,6 +18,8 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
     public static final String PROP_KEY = "multifactor.key";
     public static final String PROP_SECRET = "multifactor.secret";
     public static final String PROP_APIURL = "multifactor.apiurl";
+    public static final String PROP_BYPASS = "multifactor.bypass";
+
 
     @Override
     public String getId() {
@@ -72,6 +74,15 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
         api_url.setType(ProviderConfigProperty.STRING_TYPE);
         api_url.setHelpText("Multifactor HTTP API URL");
         configProperties.add(api_url);
+
+        ProviderConfigProperty bypass = new ProviderConfigProperty();
+        bypass.setDefaultValue(true);
+        bypass.setName(PROP_BYPASS);
+        bypass.setLabel("Bypass");
+        bypass.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        bypass.setHelpText("Enable bypass when api unreachable");
+        configProperties.add(bypass);
+
     }
 
     @Override

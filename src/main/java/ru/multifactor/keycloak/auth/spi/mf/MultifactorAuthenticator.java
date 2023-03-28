@@ -128,7 +128,7 @@ public class MultifactorAuthenticator implements Authenticator{
       }
       catch(Exception e)
       {
-        result.append("ERR: "+e.getMessage());
+        result.append("API UNREACHABLE");
         return false;
 
       }
@@ -159,15 +159,15 @@ public class MultifactorAuthenticator implements Authenticator{
       return false; 		
     }
 
-    private javax.ws.rs.core.Response createMultifactorForm(AuthenticationFlowContext context, String error) {
+    private javax.ws.rs.core.Response createMultifactorForm(AuthenticationFlowContext context, String url, String error) {
         StringBuilder result=new StringBuilder("");
         LoginFormsProvider form;
-        if(apiRequest(apiURL(context)+"/access/requests", context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
-          form=context.form().setAttribute("request_url",result.toString());
+        if(url!=null)
+          form=context.form().setAttribute("request_url",url);
         else
         {
           form=context.form().setAttribute("request_url","");
-          if (error == null) error=result.toString();
+          if (error == null) error="GENERAL ERROR";
         }
         if (error != null) 
             form.setError(error);
@@ -176,7 +176,11 @@ public class MultifactorAuthenticator implements Authenticator{
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
-          context.challenge(createMultifactorForm(context, null));
+          StringBuilder result=new StringBuilder("");
+          if(apiRequest(apiURL(context)+"/access/requests", context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
+          	context.challenge(createMultifactorForm(context, result.toString(), null));
+	  else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
+          else context.challenge(createMultifactorForm(context, null, result.toString()));
     }
 
     @Override
@@ -187,14 +191,14 @@ public class MultifactorAuthenticator implements Authenticator{
             return;
         }
         if (!formData.containsKey("jwt_token")) {
-            context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, "missing token"));
+            context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, null, "missing token"));
             return;
         }
         String token= formData.getFirst("jwt_token");
         StringBuilder result=new StringBuilder("");
         if(!chkToken(token, context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
 	{
-            context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, result.toString()));
+            context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, null, result.toString()));
             return;
         }
         context.success();
@@ -218,5 +222,10 @@ public class MultifactorAuthenticator implements Authenticator{
         if (config == null) return "";
         return String.valueOf(config.getConfig().get(PROP_APIURL));
     }
+    private boolean byPass(AuthenticationFlowContext context) {
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null) return true;
+        return Boolean.valueOf(config.getConfig().get(PROP_BYPASS));
 
+    }
 }
