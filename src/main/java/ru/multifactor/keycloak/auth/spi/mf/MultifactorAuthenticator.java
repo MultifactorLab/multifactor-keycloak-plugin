@@ -19,8 +19,8 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.*;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -159,7 +159,7 @@ public class MultifactorAuthenticator implements Authenticator{
       return false; 		
     }
 
-    private javax.ws.rs.core.Response createMultifactorForm(AuthenticationFlowContext context, String url, String error) {
+    private jakarta.ws.rs.core.Response createMultifactorForm(AuthenticationFlowContext context, String url, String error) {
         StringBuilder result=new StringBuilder("");
         LoginFormsProvider form;
         if(url!=null)
