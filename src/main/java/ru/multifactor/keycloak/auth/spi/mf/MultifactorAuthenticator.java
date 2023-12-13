@@ -177,7 +177,7 @@ public class MultifactorAuthenticator implements Authenticator{
     @Override
     public void authenticate(AuthenticationFlowContext context) {
           StringBuilder result=new StringBuilder("");
-          if(apiRequest(apiURL(context)+"/access/requests", context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
+          if(apiRequest(apiURL(context)+"/access/requests", useEmail(context)?context.getUser().getEmail():context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
           	context.challenge(createMultifactorForm(context, result.toString(), null));
 	  else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
           else context.challenge(createMultifactorForm(context, null, result.toString()));
@@ -196,7 +196,7 @@ public class MultifactorAuthenticator implements Authenticator{
         }
         String token= formData.getFirst("jwt_token");
         StringBuilder result=new StringBuilder("");
-        if(!chkToken(token, context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
+        if(!chkToken(token, useEmail(context)?context.getUser().getEmail():context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
 	{
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, null, result.toString()));
             return;
@@ -228,4 +228,11 @@ public class MultifactorAuthenticator implements Authenticator{
         return Boolean.valueOf(config.getConfig().get(PROP_BYPASS));
 
     }
+    private boolean useEmail(AuthenticationFlowContext context) {
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null) return false;
+        return Boolean.valueOf(config.getConfig().get(PROP_USE_EMAIL));
+
+    }
+
 }

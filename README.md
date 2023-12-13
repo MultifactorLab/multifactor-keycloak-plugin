@@ -1,5 +1,5 @@
 # multifactor-keycloak-plugin
-> Attention: The current version of the plugin only works with Keycloak, starting from version 22.0.1
+> Attention: The current version of the plugin only works with Keycloak, starting from version 23.0.1
 
 Authentication execution plugin for Keycloak that adds <a href="https://multifactor.ru/" target="_blank">MultiFactor</a> into the authentication flow. Component uses Keycloak Service Provider Interface (SPI) to show user a MultiFactor iframe upon completion of primary authentication.
 
