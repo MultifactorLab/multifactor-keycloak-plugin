@@ -20,6 +20,7 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
     public static final String PROP_APIURL = "multifactor.apiurl";
     public static final String PROP_BYPASS = "multifactor.bypass";
     public static final String PROP_USE_EMAIL = "multifactor.use_email";
+    public static final String PROP_USER_ATTRIBUTE = "multifactor.user_attribute";
 
 
     @Override
@@ -91,6 +92,14 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
         use_email.setType(ProviderConfigProperty.BOOLEAN_TYPE);
         use_email.setHelpText("Send the keycloak e-mail attribute to the multifactor api instead of username");
         configProperties.add(use_email);
+
+        ProviderConfigProperty user_attribute = new ProviderConfigProperty();
+        user_attribute.setName(PROP_USER_ATTRIBUTE);
+        user_attribute.setLabel("User attribute");
+        user_attribute.setType(ProviderConfigProperty.STRING_TYPE);
+        user_attribute.setHelpText("Send this user attribute to the multifactor api instead of username");
+        configProperties.add(user_attribute);
+
 
     }
 

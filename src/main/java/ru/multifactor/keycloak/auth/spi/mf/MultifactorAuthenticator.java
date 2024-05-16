@@ -1,6 +1,7 @@
 package ru.multifactor.keycloak.auth.spi.mf;
 
 import static io.restassured.RestAssured.get;
+import java.util.*;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -173,13 +174,47 @@ public class MultifactorAuthenticator implements Authenticator{
             form.setError(error);
         return form.createForm("form.ftl");
     }
-
+    private String getUserId(AuthenticationFlowContext context,StringBuilder error){
+          String attribute=userAttribute(context);
+          String result=null;
+          if(attribute!=null && attribute.trim()!="" && attribute!="null") { 
+	     Map<String,List<String>> attributes = context.getUser().getAttributes();
+             List<String>values = attributes.get(attribute.trim());
+             if(values!=null && values.size()>0) result=values.get(0);
+             if(result!=null && result.trim()!="") return(result);
+             else {
+		if(error!=null) error.append("Attribute: "+attribute+" is empty. Please check config.");
+                return (null);
+             }
+          }
+          else if(useEmail(context)) {
+             result=context.getUser().getEmail();
+             if(result!=null && result.trim()!="") return(result);
+             else {
+		if(error!=null) error.append("User e-mail is empty. Please check config.");
+                return (null);
+             }
+          }
+          else {
+             result=context.getUser().getUsername();
+             if(result!=null && result.trim()!="") return(result);
+             else {
+		if(error!=null) error.append("Username is empty. Please check config.");
+                return (null);
+             }
+             
+          }
+    }
     @Override
     public void authenticate(AuthenticationFlowContext context) {
           StringBuilder result=new StringBuilder("");
-          if(apiRequest(apiURL(context)+"/access/requests", useEmail(context)?context.getUser().getEmail():context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
-          	context.challenge(createMultifactorForm(context, result.toString(), null));
-	  else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
+          String userId = getUserId(context,result);
+          if(userId!=null) {
+          	if(apiRequest(apiURL(context)+"/access/requests", userId, apiKey(context), apiSecret(context), result))
+          		context.challenge(createMultifactorForm(context, result.toString(), null));
+	  	else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
+          	else context.challenge(createMultifactorForm(context, null, result.toString()));
+          }
           else context.challenge(createMultifactorForm(context, null, result.toString()));
     }
 
@@ -196,7 +231,7 @@ public class MultifactorAuthenticator implements Authenticator{
         }
         String token= formData.getFirst("jwt_token");
         StringBuilder result=new StringBuilder("");
-        if(!chkToken(token, useEmail(context)?context.getUser().getEmail():context.getUser().getUsername(), apiKey(context), apiSecret(context), result))
+        if(!chkToken(token, getUserId(context,null), apiKey(context), apiSecret(context), result))
 	{
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, null, result.toString()));
             return;
@@ -234,5 +269,11 @@ public class MultifactorAuthenticator implements Authenticator{
         return Boolean.valueOf(config.getConfig().get(PROP_USE_EMAIL));
 
     }
+    private String userAttribute(AuthenticationFlowContext context) {
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null) return "";
+        return String.valueOf(config.getConfig().get(PROP_USER_ATTRIBUTE));
+    }
+
 
 }
