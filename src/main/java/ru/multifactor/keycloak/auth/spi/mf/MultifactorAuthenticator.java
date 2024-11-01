@@ -122,7 +122,7 @@ public class MultifactorAuthenticator implements Authenticator{
       int statusCode; 
       try
       {
-      	response= RestAssured.given().relaxedHTTPSValidation().auth().preemptive().basic(apiKey,secret)
+      	response= RestAssured.given().auth().preemptive().basic(apiKey,secret)
                         .contentType(ContentType.JSON).body(StringUtils.getBytesUtf8(requestBody.toString())).post(url)
                         .then().extract().response();
       	statusCode = response.getStatusCode();
