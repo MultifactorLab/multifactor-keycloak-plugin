@@ -169,8 +169,8 @@
             arUrl = getDataAttribute(promptElement, 'requestUrl');
             if (!arUrl) {
                 throwError(
-                    'No acces request URL is given for use.  Be sure to set ' +
-                    '`data-request-url` attribute on the iframe element.'
+                    'No access request URL has been provided. Ensure the ' +
+                    '`data-request-url` attribute is set on the iframe element.'
                 );
             }
         }
