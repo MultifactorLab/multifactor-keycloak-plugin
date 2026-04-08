@@ -178,17 +178,16 @@
         if (postAction === '') {
             postAction = getDataAttribute(promptElement, 'postAction') || postAction;
         }
-
-
-        iframe = promptElement;
-        iframe.src = arUrl;
-
-        const existingAllow = iframe.getAttribute('allow') || '';
+        
+        const existingAllow = promptElement.getAttribute('allow') || '';
         const newAllow = existingAllow
             ? existingAllow + '; publickey-credentials-create \'src\'; publickey-credentials-get \'src\''
             : 'publickey-credentials-create \'src\'; publickey-credentials-get \'src\'';
 
-        iframe.setAttribute('allow', newAllow);
+        promptElement.setAttribute('allow', newAllow);
+
+        iframe = promptElement;
+        iframe.src = arUrl;
 
         // listen for the 'message' event
         onMessage(onReceivedMessage);
