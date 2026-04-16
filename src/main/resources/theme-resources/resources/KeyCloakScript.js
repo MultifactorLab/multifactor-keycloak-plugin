@@ -1,3 +1,4 @@
+
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         define([], factory);
@@ -7,7 +8,7 @@
         var mf = factory();
         mf._onReady(mf.init);
         root.mf = mf;
-    }
+  }
 }(this, function() {
 
     var postAction,
@@ -80,12 +81,13 @@
         off(window, 'message', 'onmessage', callback);
     }
 
+
     /**
      * Prepare for the iframe to become ready.
      *
      */
     function init(options) {
-
+        
         initializeStatefulVariables();
         var promptElement = getPromptElement(options);
 
@@ -111,6 +113,7 @@
         return result;
     }
 
+
     /**
      * Check if the given thing is an iframe.
      */
@@ -122,51 +125,17 @@
         );
     }
 
+
     /**
      * This function is called when a message was received.
      */
     function onReceivedMessage(event) {
-        // make sure message from known origin
-        if (arUrl && event.origin && arUrl.indexOf(event.origin, 0) === 0) {
-            var responseData = event.data;
-            if (typeof responseData === 'string' &&
-                (responseData.includes('publickey-credentials-get feature is not enabled') ||
-                    responseData.includes('publickey-credentials-create feature is not enabled'))) {
-                console.warn('WebAuthn не доступен в iframe, используем fallback');
-                showWebAuthnFallback();
-                return;
-            }
+          //make sure message from known origin
+          if (arUrl.indexOf(event.origin, 0)===0){
             doPostBack(event.data);
             // always clean up after yourself!
             offMessage(onReceivedMessage);
-        }
-    }
-
-    /**
-     * Show fallback UI when WebAuthn is blocked
-     */
-    function showWebAuthnFallback() {
-        if (document.getElementById('mf-webauthn-fallback')) {
-            return;
-        }
-
-        var messageDiv = document.createElement('div');
-        messageDiv.id = 'mf-webauthn-fallback';
-        messageDiv.style.cssText = 'position:fixed; top:20px; left:20px; right:20px; background:#f0ad4e; color:#000; padding:15px; z-index:10000; text-align:center; font-family:sans-serif; border-radius:5px; box-shadow:0 2px 10px rgba(0,0,0,0.2);';
-        messageDiv.innerHTML = '⚠️ Ваш браузер не поддерживает вход по ключу безопасности в этом окне. ' +
-            '<a href="#" id="mf-fallback-redirect" style="color:#000; text-decoration:underline; font-weight:bold;">Нажмите здесь для альтернативного входа</a>.';
-        document.body.appendChild(messageDiv);
-
-        setTimeout(function() {
-            if (messageDiv && messageDiv.parentNode) {
-                messageDiv.style.opacity = '0';
-                setTimeout(function() {
-                    if (messageDiv && messageDiv.parentNode) {
-                        messageDiv.parentNode.removeChild(messageDiv);
-                    }
-                }, 500);
-            }
-        }, 10000);
+          }   
     }
 
     /**
@@ -205,29 +174,17 @@
                 );
             }
         }
-
+        
         if (postAction === '') {
             postAction = getDataAttribute(promptElement, 'postAction') || postAction;
         }
-
+        
         const existingAllow = promptElement.getAttribute('allow') || '';
-        const webauthnTokens = 'publickey-credentials-create src; publickey-credentials-get src';
-
         const newAllow = existingAllow
-            ? existingAllow + '; ' + webauthnTokens
-            : webauthnTokens;
+            ? existingAllow + '; publickey-credentials-create \'src\'; publickey-credentials-get \'src\''
+            : 'publickey-credentials-create \'src\'; publickey-credentials-get \'src\'';
 
         promptElement.setAttribute('allow', newAllow);
-
-        if (!promptElement.hasAttribute('sandbox')) {
-            promptElement.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-modals');
-        }
-
-        if (window.console && console.log) {
-            console.log('MF: Allow attribute set to:', promptElement.getAttribute('allow'));
-            console.log('MF: Sandbox attribute set to:', promptElement.getAttribute('sandbox'));
-            console.log('MF: Iframe src set to:', arUrl);
-        }
 
         iframe = promptElement;
         iframe.src = arUrl;
