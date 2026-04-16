@@ -174,22 +174,32 @@
                 );
             }
         }
-        
+
         if (postAction === '') {
             postAction = getDataAttribute(promptElement, 'postAction') || postAction;
         }
-        
+        const newIframe = document.createElement('iframe');
+
+        for (let attr of promptElement.attributes) {
+            if (attr.name !== 'src' && attr.name !== 'allow') {
+                newIframe.setAttribute(attr.name, attr.value);
+            }
+        }
+
         const existingAllow = promptElement.getAttribute('allow') || '';
         const newAllow = existingAllow
             ? existingAllow + '; publickey-credentials-create \'src\'; publickey-credentials-get \'src\''
             : 'publickey-credentials-create \'src\'; publickey-credentials-get \'src\'';
+        newIframe.setAttribute('allow', newAllow);
 
-        promptElement.setAttribute('allow', newAllow);
+        newIframe.src = arUrl;
 
-        iframe = promptElement;
-        iframe.src = arUrl;
+        if (promptElement.parentNode) {
+            promptElement.parentNode.replaceChild(newIframe, promptElement);
+        }
 
-        // listen for the 'message' event
+        iframe = newIframe;
+
         onMessage(onReceivedMessage);
     }
 
