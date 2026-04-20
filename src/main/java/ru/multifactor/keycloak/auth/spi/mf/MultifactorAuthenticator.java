@@ -39,6 +39,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.HmacUtils;
+import org.apache.http.HttpHost;
+
 import java.util.Date;
 
 import static ru.multifactor.keycloak.auth.spi.mf.MultifactorAuthenticatorFactory.*;
@@ -106,7 +108,7 @@ public class MultifactorAuthenticator implements Authenticator{
 	
 
     }
-    public static boolean apiRequest(String url, String user, String apiKey, String secret, StringBuilder result)
+    public static boolean apiRequest(String url, String user, String apiKey, String secret, String proxy, StringBuilder result)
     {
       JSONObject requestBody = new JSONObject();
       JSONObject requestCallback = new JSONObject();
@@ -122,10 +124,19 @@ public class MultifactorAuthenticator implements Authenticator{
       int statusCode; 
       try
       {
-      	response= RestAssured.given().auth().preemptive().basic(apiKey,secret)
-                        .contentType(ContentType.JSON).body(StringUtils.getBytesUtf8(requestBody.toString())).post(url)
-                        .then().extract().response();
-      	statusCode = response.getStatusCode();
+          if (proxy != null && proxy != "") {
+              HttpHost proxyHost = HttpHost.create(proxy);
+              String proxyHostname = proxyHost.getHostName();
+              int proxyPort = proxyHost.getPort();
+              response= RestAssured.given().proxy(proxyHostname, proxyPort).auth().preemptive().basic(apiKey,secret)
+                      .contentType(ContentType.JSON).body(StringUtils.getBytesUtf8(requestBody.toString())).post(url)
+                      .then().extract().response();
+          } else {
+              response= RestAssured.given().auth().preemptive().basic(apiKey,secret)
+                      .contentType(ContentType.JSON).body(StringUtils.getBytesUtf8(requestBody.toString())).post(url)
+                      .then().extract().response();
+          }
+          statusCode = response.getStatusCode();
       }
       catch(Exception e)
       {
@@ -210,7 +221,7 @@ public class MultifactorAuthenticator implements Authenticator{
           StringBuilder result=new StringBuilder("");
           String userId = getUserId(context,result);
           if(userId!=null) {
-          	if(apiRequest(apiURL(context)+"/access/requests", userId, apiKey(context), apiSecret(context), result))
+          	if(apiRequest(apiURL(context)+"/access/requests", userId, apiKey(context), apiSecret(context), proxy(context), result))
           		context.challenge(createMultifactorForm(context, result.toString(), null));
 	  	else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
           	else context.challenge(createMultifactorForm(context, null, result.toString()));
@@ -273,6 +284,11 @@ public class MultifactorAuthenticator implements Authenticator{
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         if (config == null) return "";
         return String.valueOf(config.getConfig().get(PROP_USER_ATTRIBUTE));
+    }
+    private String proxy(AuthenticationFlowContext context) {
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null) return "";
+        return config.getConfig().get(PROP_PROXY);
     }
 
 

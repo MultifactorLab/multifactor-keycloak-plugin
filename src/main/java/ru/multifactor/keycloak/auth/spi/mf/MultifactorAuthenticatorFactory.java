@@ -21,6 +21,7 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
     public static final String PROP_BYPASS = "multifactor.bypass";
     public static final String PROP_USE_EMAIL = "multifactor.use_email";
     public static final String PROP_USER_ATTRIBUTE = "multifactor.user_attribute";
+    public static final String PROP_PROXY = "multifactor.proxy";
 
 
     @Override
@@ -100,7 +101,12 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
         user_attribute.setHelpText("Send this user attribute to the multifactor api instead of username");
         configProperties.add(user_attribute);
 
-
+        ProviderConfigProperty proxy = new ProviderConfigProperty();
+        proxy.setName(PROP_PROXY);
+        proxy.setLabel("Proxy address");
+        proxy.setType(ProviderConfigProperty.STRING_TYPE);
+        proxy.setHelpText("Set this attribute to use proxy. Example: 10.10.10.10:1234");
+        configProperties.add(proxy);
     }
 
     @Override
