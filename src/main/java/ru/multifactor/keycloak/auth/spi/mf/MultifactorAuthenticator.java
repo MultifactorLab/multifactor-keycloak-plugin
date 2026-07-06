@@ -210,7 +210,8 @@ public class MultifactorAuthenticator implements Authenticator{
           StringBuilder result=new StringBuilder("");
           String userId = getUserId(context,result);
           if(userId!=null) {
-          	if(apiRequest(apiURL(context)+"/access/requests", userId, apiKey(context), apiSecret(context), result))
+          	FederationCredentialsResolver.Credentials credentials = FederationCredentialsResolver.resolve(context);
+          	if(apiRequest(apiURL(context)+"/access/requests", userId, credentials.apiKey, credentials.apiSecret, result))
           		context.challenge(createMultifactorForm(context, result.toString(), null));
 	  	else if(result.toString().equals("API UNREACHABLE") && byPass(context)) context.success();
           	else context.challenge(createMultifactorForm(context, null, result.toString()));
@@ -231,7 +232,8 @@ public class MultifactorAuthenticator implements Authenticator{
         }
         String token= formData.getFirst("jwt_token");
         StringBuilder result=new StringBuilder("");
-        if(!chkToken(token, getUserId(context,null), apiKey(context), apiSecret(context), result))
+        FederationCredentialsResolver.Credentials credentials = FederationCredentialsResolver.resolve(context);
+        if(!chkToken(token, getUserId(context,null), credentials.apiKey, credentials.apiSecret, result))
 	{
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createMultifactorForm(context, null, result.toString()));
             return;
@@ -242,16 +244,6 @@ public class MultifactorAuthenticator implements Authenticator{
     @Override
     public void close() {}
 
-    private String apiKey(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_KEY));
-    }
-    private String apiSecret(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_SECRET));
-    }
     private String apiURL(AuthenticationFlowContext context) {
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         if (config == null) return "";

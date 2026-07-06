@@ -21,6 +21,7 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
     public static final String PROP_BYPASS = "multifactor.bypass";
     public static final String PROP_USE_EMAIL = "multifactor.use_email";
     public static final String PROP_USER_ATTRIBUTE = "multifactor.user_attribute";
+    public static final String PROP_FEDERATION_MAP = "multifactor.federation.map";
 
 
     @Override
@@ -100,6 +101,16 @@ public class MultifactorAuthenticatorFactory implements AuthenticatorFactory{
         user_attribute.setHelpText("Send this user attribute to the multifactor api instead of username");
         configProperties.add(user_attribute);
 
+        ProviderConfigProperty federation_map = new ProviderConfigProperty();
+        federation_map.setName(PROP_FEDERATION_MAP);
+        federation_map.setLabel("Federation API keys (JSON)");
+        federation_map.setType(ProviderConfigProperty.TEXT_TYPE);
+        federation_map.setHelpText(
+                "Per LDAP federation credentials. Keys are federation names from User federation "
+                        + "(e.g. ldap-alpha, ldap-beta). Example: {\"ldap-alpha\":{\"key\":\"...\",\"secret\":\"...\"}}. "
+                        + "Federated users without a matching entry use Default Api Key/Secret above."
+        );
+        configProperties.add(federation_map);
 
     }
 

@@ -31,10 +31,12 @@ $ cp <keycloack dir>/target/keycloak-multifactor-spi-jar-with-dependencies.jar <
 4. In KeyCloak "Authentication" -> "Flow" select "Copy of browser" and click "Add step" to "Copy of browser forms" and select `Multifactor`(Attention: "Multifactor" must be after "Username Password Form");
 
 5. Press "Settings" for "Multifactor" and enter the following values:
-  * API key: value from step 1;
-  * API secret: value from step 1;
+  * API key / API secret: default credentials (fallback for local users);
+  * **Federation API keys (JSON)** (optional): per LDAP federation credentials. Federation name must match Keycloak User federation name, e.g. `{"ldap-alpha":{"key":"...","secret":"..."},"ldap-beta":{"key":"...","secret":"..."}}`;
   * API URL: https://api.multifactor.ru.
 
-6. Select `REQUIRED` under the Requirement column for "Multifactor". Save your configuration; 
+  Federated users use credentials from the JSON map by `user.federationLink` → federation component name. Users from federations not listed in the map use the default API key/secret.
+
+6. Select `REQUIRED` under the Requirement column for "Multifactor". Save your configuration;
 
 7. In your Keycloak client's settings, in the "Advanced" -> "Authentication Flow Overrides" section, bind your "Copy of browser" to the Browser Flow. Alternatively, you can bind new flow globally: In "Authentication" -> "Flow" select "Copy of browser" and click "Action->Bind flow".
